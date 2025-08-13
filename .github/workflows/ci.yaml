@@ -29,11 +29,11 @@ jobs:
       - name: Login to xpkg with robot
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
         with:
-          registry: xpkg.upbound.io
+          registry: xpkg.dev-deba7a0e.u6d.dev
           username: ${{ env.UP_ROBOT_ID }}
           password: ${{ env.UP_API_TOKEN }}
 
-      - name: Mirror images to xpkg.upbound.io
+      - name: Mirror images to xpkg.dev-deba7a0e.u6d.dev
         if: env.UP_API_TOKEN != ''
         run: |
           # Install helm images plugin
@@ -76,7 +76,7 @@ jobs:
       - name: Login to xpkg with robot
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
         with:
-          registry: xpkg.upbound.io
+          registry: xpkg.dev-deba7a0e.u6d.dev
           username: ${{ env.UP_ROBOT_ID }}
           password: ${{ env.UP_API_TOKEN }}
 
@@ -128,7 +128,18 @@ jobs:
             CHART_VERSION="${CHART_VERSION}-${COMMIT_ID}"
           fi
 
-          up xpkg push xpkg.upbound.io/$UP_ORG/$CONTROLLER_NAME:$CHART_VERSION -f $XPKG_FILENAME
+          echo "UP_ORG=$UP_ORG" >> $GITHUB_ENV
+          echo "CONTROLLER_NAME=$CONTROLLER_NAME" >> $GITHUB_ENV
+          echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
+
+          up xpkg push xpkg.dev-deba7a0e.u6d.dev/$UP_ORG/$CONTROLLER_NAME:$CHART_VERSION -f $XPKG_FILENAME
+        
+      - name: Append package assets for Marketplace
+        run: |
+          extensions_dir=${{ github.workspace }}/extensions
+          mkdir -p $extensions_dir/readme
+          cp ./README.md $extensions_dir/readme/readme.md
+          up alpha xpkg append xpkg.dev-deba7a0e.u6d.dev/${{ env.UP_ORG }}/${{ env.CONTROLLER_NAME }}:${{ env.CHART_VERSION }} --extensions-root $extensions_dir          
 
   run-e2e-tests:
     name: Run e2e Tests
@@ -148,7 +159,7 @@ jobs:
       - name: Login to xpkg with robot
         uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
         with:
-          registry: xpkg.upbound.io
+          registry: xpkg.dev-deba7a0e.u6d.dev
           username: ${{ env.UP_ROBOT_ID }}
           password: ${{ env.UP_API_TOKEN }}
 
